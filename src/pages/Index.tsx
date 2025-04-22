@@ -1,6 +1,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import Auth from "@/components/Auth";
 import TestimonialCard from "@/components/TestimonialCard";
 import { getTestimonials } from "@/lib/api";
 import { useEffect, useState } from "react";
@@ -10,6 +14,16 @@ import { Mic, Video, MessageSquare, Link2 } from "lucide-react";
 const Index = () => {
   const [featuredTestimonials, setFeaturedTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -39,13 +53,25 @@ const Index = () => {
               Easily collect video, audio, and text testimonials from your customers with a simple shareable link.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-brand-600 hover:bg-brand-700">
-                <Link to="/dashboard">Go To Dashboard</Link>
-              </Button>
+              {user ? (
+                <Button asChild size="lg" className="bg-brand-600 hover:bg-brand-700">
+                  <Link to="/dashboard">Go To Dashboard</Link>
+                </Button>
+              ) : (
+                <Button size="lg" className="bg-brand-600 hover:bg-brand-700" onClick={() => setShowAuth(true)}>
+                  Get Started
+                </Button>
+              )}
               <Button asChild size="lg" variant="outline">
                 <Link to="/testimonial/demo">Try Demo Form</Link>
               </Button>
             </div>
+            
+            <Dialog open={showAuth} onOpenChange={setShowAuth}>
+              <DialogContent className="sm:max-w-md">
+                <Auth />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Features */}
