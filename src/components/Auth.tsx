@@ -12,19 +12,19 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isSignUp, setIsSignUp] = useState(true);
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { error } = isSignUp 
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
       
-      if (signUpError) throw signUpError;
-      
+      if (error) throw error;
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message);
@@ -56,7 +56,14 @@ export default function Auth() {
           required
         />
         <Button type="submit" disabled={loading}>
-          {loading ? "Loading..." : "Sign Up"}
+          {loading ? "Loading..." : (isSignUp ? "Sign Up" : "Sign In")}
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => setIsSignUp(!isSignUp)}
+        >
+          {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
         </Button>
       </form>
     </div>
