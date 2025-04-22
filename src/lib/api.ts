@@ -73,8 +73,8 @@ export const submitTestimonial = async (formData: FormData): Promise<void> => {
     const testimonialData = {
       name: formData.name,
       email: formData.email,
-      company: formData.company,
-      position: formData.position,
+      company: formData.company || '',
+      position: formData.position || '',
       text: formData.text,
       rating: formData.rating,
       media_type: formData.mediaType,
@@ -86,7 +86,12 @@ export const submitTestimonial = async (formData: FormData): Promise<void> => {
     const { error } = await supabase
       .from('testimonials')
       .insert([testimonialData])
-      .select();
+      .select('*');
+
+    if (error) {
+      console.error('Submission error:', error);
+      throw new Error(error.message);
+    }
 
     if (error) {
       console.error('Supabase error:', error);
