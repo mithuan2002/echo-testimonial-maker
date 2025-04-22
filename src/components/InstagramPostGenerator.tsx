@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Testimonial } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +76,9 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATES[0]);
   const [caption, setCaption] = useState(generateCaption(testimonial));
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
+  const postRef = useRef<HTMLDivElement>(null);
   
   // Handle template selection
   const handleTemplateChange = (templateId: string) => {
@@ -96,11 +98,48 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
   };
   
   // Generate a downloadable image of the post preview
-  const handleDownloadImage = () => {
-    toast({
-      title: "Post ready to share!",
-      description: "Instagram post image has been prepared for download.",
-    });
+  const handleDownloadImage = async () => {
+    if (!postRef.current) return;
+    
+    setIsDownloading(true);
+    try {
+      // Import html2canvas dynamically to reduce initial bundle size
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
+      
+      // Create canvas from the post element
+      const canvas = await html2canvas(postRef.current, {
+        scale: 2, // Higher resolution
+        logging: false,
+        backgroundColor: null,
+        useCORS: true
+      });
+      
+      // Convert canvas to data URL
+      const image = canvas.toDataURL("image/png");
+      
+      // Create a link element to download the image
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `testimonial-${testimonial.id}-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Post downloaded!",
+        description: "Instagram post image has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Download failed",
+        description: "There was an error generating the image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
   
   return (
@@ -153,7 +192,10 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
               </div>
               
               <Card className="overflow-hidden border-2 border-gray-200">
-                <div className={`aspect-square ${selectedTemplate.bgColor} relative p-6 flex items-center justify-center`}>
+                <div 
+                  ref={postRef}
+                  className={`aspect-square ${selectedTemplate.bgColor} relative p-6 flex items-center justify-center`}
+                >
                   <div className="max-w-xs mx-auto text-center">
                     <div className={`text-lg md:text-xl font-medium ${selectedTemplate.textColor} mb-4`}>
                       "{testimonial.text.length > 120 
@@ -177,9 +219,22 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
                 </div>
               </Card>
               
-              <Button onClick={handleDownloadImage} className="w-full mt-2">
-                <Download size={16} className="mr-2" />
-                Download Instagram Post
+              <Button 
+                onClick={handleDownloadImage} 
+                className="w-full mt-2"
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Generating Image...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} className="mr-2" />
+                    Download Instagram Post
+                  </>
+                )}
               </Button>
             </div>
           </TabsContent>
