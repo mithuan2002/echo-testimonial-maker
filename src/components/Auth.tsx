@@ -24,15 +24,22 @@ export default function Auth() {
     
     try {
       if (isSignUp) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError, data } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              email: email
+            }
           }
         });
         if (signUpError) throw signUpError;
-        setMessage("Check your email for the confirmation link!");
+        if (data?.user?.identities?.length === 0) {
+          setError("This email is already registered. Please sign in instead.");
+        } else {
+          setMessage("Please check your email for the confirmation link. If you don't see it, check your spam folder.");
+        }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
