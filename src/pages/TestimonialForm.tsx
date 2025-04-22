@@ -86,14 +86,13 @@ const TestimonialForm = () => {
       
       setSubmissionComplete(true);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting testimonial:", error);
       toast({
         title: "Submission failed",
-        description: "There was an error submitting your testimonial. Please try again.",
+        description: error.message || "There was an error submitting your testimonial. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

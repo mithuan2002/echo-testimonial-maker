@@ -52,30 +52,45 @@ export const getTestimonialById = async (id: string): Promise<Testimonial | null
 
 // Submit a new testimonial
 export const submitTestimonial = async (formData: FormData): Promise<void> => {
-  const { mediaBlob, ...rest } = formData;
+  try {
+    // First upload media if exists
+    let mediaUrl = null;
+    if (formData.mediaBlob && formData.mediaType !== 'none') {
+      const fileExt = formData.mediaType === 'audio' ? 'mp3' : 'mp4';
+      const fileName = `${Date.now()}.${fileExt}`;
 
-  // First upload media if exists
-  let mediaUrl = null;
-  if (mediaBlob) {
-    const fileName = `${Date.now()}-${rest.name.replace(/\s+/g, '-')}`;
-    const { data, error } = await supabase.storage
-      .from('testimonial-media')
-      .upload(fileName, mediaBlob);
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('testimonials')
+        .upload(fileName, formData.mediaBlob);
+
+      if (uploadError) throw uploadError;
+      mediaUrl = uploadData?.path;
+    }
+
+    // Then submit testimonial data
+    const testimonialData = {
+      name: formData.name,
+      email: formData.email,
+      company: formData.company,
+      position: formData.position,
+      text: formData.text,
+      rating: formData.rating,
+      media_type: formData.mediaType,
+      media_url: mediaUrl
+    };
+
+    const { data, error } = await supabase
+      .from('testimonials')
+      .insert([testimonialData])
+      .select()
+      .single();
 
     if (error) throw error;
-    mediaUrl = data.path;
+    return data;
+  } catch (error: any) {
+    console.error('Error submitting testimonial:', error);
+    throw new Error(error.message || 'Failed to submit testimonial');
   }
-
-  // Then save testimonial data
-  const { error } = await supabase
-    .from('testimonials')
-    .insert([{
-      ...rest,
-      media_url: mediaUrl,
-      status: 'pending'
-    }]);
-
-  if (error) throw error;
 };
 
 // Update testimonial approval status
