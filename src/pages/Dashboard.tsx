@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { getTestimonials, updateTestimonialStatus, deleteTestimonial, generateShareableLink } from "@/lib/api";
 import { Testimonial } from "@/types";
 import TestimonialCard from "@/components/TestimonialCard";
+import InstagramPostGenerator from "@/components/InstagramPostGenerator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +24,6 @@ const Dashboard = () => {
   const [activeVideoTestimonial, setActiveVideoTestimonial] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Fetch testimonials on component mount
   useEffect(() => {
     fetchTestimonials();
   }, []);
@@ -174,7 +173,6 @@ const Dashboard = () => {
           </Dialog>
         </div>
         
-        {/* Dashboard Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
@@ -207,7 +205,6 @@ const Dashboard = () => {
           </Card>
         </div>
         
-        {/* Testimonials List */}
         <Tabs defaultValue="pending" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="pending" className="text-base">
@@ -300,6 +297,7 @@ const Dashboard = () => {
                               Approved
                             </Badge>
                             <div className="flex items-center gap-2">
+                              <InstagramPostGenerator testimonial={testimonial} />
                               <div className="flex items-center mr-2">
                                 <Label htmlFor={`published-${testimonial.id}`} className="mr-2 text-sm">
                                   Published
@@ -345,7 +343,6 @@ const Dashboard = () => {
         </Tabs>
       </div>
       
-      {/* Audio Playback Dialog */}
       <Dialog 
         open={!!activeAudioTestimonial} 
         onOpenChange={(open) => !open && setActiveAudioTestimonial(null)}
@@ -363,7 +360,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Video Playback Dialog */}
       <Dialog 
         open={!!activeVideoTestimonial} 
         onOpenChange={(open) => !open && setActiveVideoTestimonial(null)}
