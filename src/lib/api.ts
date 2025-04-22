@@ -61,7 +61,9 @@ export const submitTestimonial = async (formData: FormData): Promise<void> => {
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('testimonials')
-        .upload(fileName, formData.mediaBlob);
+        .upload(`public/${fileName}`, formData.mediaBlob, {
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
       mediaUrl = uploadData?.path;
@@ -76,20 +78,22 @@ export const submitTestimonial = async (formData: FormData): Promise<void> => {
       text: formData.text,
       rating: formData.rating,
       media_type: formData.mediaType,
-      media_url: mediaUrl
+      media_url: mediaUrl,
+      approved: false,
+      created_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('testimonials')
-      .insert([testimonialData])
-      .select()
-      .single();
+      .insert([testimonialData]);
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message);
+    }
   } catch (error: any) {
     console.error('Error submitting testimonial:', error);
-    throw new Error(error.message || 'Failed to submit testimonial');
+    throw error;
   }
 };
 
