@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Testimonial } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -13,35 +12,107 @@ import { Separator } from "@/components/ui/separator";
 import { Instagram, Image, LayoutGrid, Copy, CheckCircle, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface InstagramPostGeneratorProps {
-  testimonial: Testimonial;
-}
-
 const TEMPLATES = [
   {
     id: "minimal",
-    name: "Minimal",
+    name: "Minimal Clean",
     bgColor: "bg-white",
     textColor: "text-gray-900",
     accentColor: "bg-brand-600",
+    fontStyle: "font-sans",
   },
   {
-    id: "gradient",
-    name: "Gradient",
-    bgColor: "bg-gradient-to-br from-brand-100 to-brand-300",
+    id: "gradient-purple",
+    name: "Purple Gradient",
+    bgColor: "bg-gradient-to-br from-purple-100 to-purple-300",
     textColor: "text-gray-900",
-    accentColor: "bg-brand-700",
+    accentColor: "bg-purple-700",
+    fontStyle: "font-serif",
   },
   {
-    id: "dark",
-    name: "Dark",
+    id: "modern-dark",
+    name: "Modern Dark",
     bgColor: "bg-gray-900",
     textColor: "text-white",
     accentColor: "bg-brand-500",
+    fontStyle: "font-mono",
   },
+  {
+    id: "sunset",
+    name: "Sunset Vibes",
+    bgColor: "bg-gradient-to-r from-orange-200 via-amber-200 to-yellow-200",
+    textColor: "text-gray-800",
+    accentColor: "bg-orange-500",
+    fontStyle: "font-sans",
+  },
+  {
+    id: "ocean",
+    name: "Ocean Breeze",
+    bgColor: "bg-gradient-to-br from-blue-100 to-cyan-200",
+    textColor: "text-blue-900",
+    accentColor: "bg-blue-600",
+    fontStyle: "font-serif",
+  },
+  {
+    id: "nature",
+    name: "Nature Fresh",
+    bgColor: "bg-gradient-to-br from-green-100 to-emerald-200",
+    textColor: "text-emerald-900",
+    accentColor: "bg-emerald-600",
+    fontStyle: "font-sans",
+  },
+  {
+    id: "bold",
+    name: "Bold Statement",
+    bgColor: "bg-black",
+    textColor: "text-white",
+    accentColor: "bg-red-500",
+    fontStyle: "font-mono",
+  },
+  {
+    id: "pastel",
+    name: "Soft Pastel",
+    bgColor: "bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100",
+    textColor: "text-gray-800",
+    accentColor: "bg-pink-400",
+    fontStyle: "font-serif",
+  },
+  {
+    id: "vintage",
+    name: "Vintage Look",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-900",
+    accentColor: "bg-amber-800",
+    fontStyle: "font-serif italic",
+  },
+  {
+    id: "neon",
+    name: "Neon Glow",
+    bgColor: "bg-gray-900",
+    textColor: "text-green-400",
+    accentColor: "bg-purple-600",
+    fontStyle: "font-mono",
+    className: "shadow-[0_0_15px_rgba(34,197,94,0.3)]",
+  },
+  {
+    id: "minimal-grid",
+    name: "Grid Pattern",
+    bgColor: "bg-white bg-[radial-gradient(circle,_transparent_20%,_#f3f4f6_20%,_#f3f4f6_80%,_transparent_80%,_transparent)_0%_0%_/_5px_5px]",
+    textColor: "text-gray-900",
+    accentColor: "bg-gray-400",
+    fontStyle: "font-sans",
+  },
+  {
+    id: "watercolor",
+    name: "Watercolor",
+    bgColor: "bg-gradient-to-br from-rose-100 via-pink-100 to-purple-100",
+    textColor: "text-gray-800",
+    accentColor: "bg-rose-400",
+    fontStyle: "font-serif italic",
+    className: "bg-opacity-50",
+  }
 ];
 
-// Hashtag suggestions based on testimonial content
 const generateHashtags = (testimonial: Testimonial): string => {
   const hashtags = [
     "#testimonial",
@@ -50,12 +121,10 @@ const generateHashtags = (testimonial: Testimonial): string => {
     "#review",
   ];
   
-  // Add industry-specific hashtags
   if (testimonial.company) {
     hashtags.push("#business", "#partnership");
   }
   
-  // Add rating hashtags if available
   if (testimonial.rating && testimonial.rating >= 4) {
     hashtags.push("#fivestars", "#recommended");
   }
@@ -63,7 +132,6 @@ const generateHashtags = (testimonial: Testimonial): string => {
   return hashtags.slice(0, 8).join(" ");
 };
 
-// Generate caption from testimonial
 const generateCaption = (testimonial: Testimonial): string => {
   const quote = testimonial.text.length > 100 
     ? testimonial.text.substring(0, 100) + "..." 
@@ -80,13 +148,11 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
   const { toast } = useToast();
   const postRef = useRef<HTMLDivElement>(null);
   
-  // Handle template selection
   const handleTemplateChange = (templateId: string) => {
     const template = TEMPLATES.find(t => t.id === templateId) || TEMPLATES[0];
     setSelectedTemplate(template);
   };
   
-  // Handle copy to clipboard
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(caption);
     setCopied(true);
@@ -97,28 +163,23 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
     setTimeout(() => setCopied(false), 2000);
   };
   
-  // Generate a downloadable image of the post preview
   const handleDownloadImage = async () => {
     if (!postRef.current) return;
     
     setIsDownloading(true);
     try {
-      // Import html2canvas dynamically to reduce initial bundle size
       const html2canvasModule = await import('html2canvas');
       const html2canvas = html2canvasModule.default;
       
-      // Create canvas from the post element
       const canvas = await html2canvas(postRef.current, {
-        scale: 2, // Higher resolution
+        scale: 2,
         logging: false,
         backgroundColor: null,
         useCORS: true
       });
       
-      // Convert canvas to data URL
       const image = canvas.toDataURL("image/png");
       
-      // Create a link element to download the image
       const link = document.createElement('a');
       link.href = image;
       link.download = `testimonial-${testimonial.id}-${Date.now()}.png`;
@@ -173,7 +234,7 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
           <TabsContent value="preview" className="mt-4">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="template">Select Template</Label>
+                <Label htmlFor="template" className="text-base font-medium">Template Style</Label>
                 <Select 
                   value={selectedTemplate.id} 
                   onValueChange={handleTemplateChange}
@@ -182,11 +243,18 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
                     <SelectValue placeholder="Select template" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TEMPLATES.map(template => (
-                      <SelectItem key={template.id} value={template.id}>
-                        {template.name}
-                      </SelectItem>
-                    ))}
+                    <div className="grid grid-cols-1 gap-1 p-1">
+                      {TEMPLATES.map(template => (
+                        <SelectItem 
+                          key={template.id} 
+                          value={template.id}
+                          className="flex items-center gap-2 py-2 cursor-pointer hover:bg-gray-100 rounded-md"
+                        >
+                          <div className={`w-4 h-4 rounded ${template.accentColor}`} />
+                          <span>{template.name}</span>
+                        </SelectItem>
+                      ))}
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -194,22 +262,22 @@ const InstagramPostGenerator: React.FC<InstagramPostGeneratorProps> = ({ testimo
               <Card className="overflow-hidden border-2 border-gray-200">
                 <div 
                   ref={postRef}
-                  className={`aspect-square ${selectedTemplate.bgColor} relative p-6 flex items-center justify-center`}
+                  className={`aspect-square ${selectedTemplate.bgColor} ${selectedTemplate.className || ''} relative p-6 flex items-center justify-center transition-all duration-300`}
                 >
-                  <div className="max-w-xs mx-auto text-center">
-                    <div className={`text-lg md:text-xl font-medium ${selectedTemplate.textColor} mb-4`}>
+                  <div className={`max-w-xs mx-auto text-center ${selectedTemplate.fontStyle}`}>
+                    <div className={`text-lg md:text-xl font-medium ${selectedTemplate.textColor} mb-4 transition-colors duration-300`}>
                       "{testimonial.text.length > 120 
                         ? testimonial.text.substring(0, 120) + "..." 
                         : testimonial.text}"
                     </div>
                     <div className="flex items-center justify-center">
-                      <div className={`h-0.5 w-12 ${selectedTemplate.accentColor} my-3`}></div>
+                      <div className={`h-0.5 w-12 ${selectedTemplate.accentColor} my-3 transition-colors duration-300`}></div>
                     </div>
-                    <div className={`text-sm md:text-base font-medium ${selectedTemplate.textColor}`}>
+                    <div className={`text-sm md:text-base font-medium ${selectedTemplate.textColor} transition-colors duration-300`}>
                       {testimonial.name}
                     </div>
                     {(testimonial.position || testimonial.company) && (
-                      <div className={`text-xs md:text-sm ${selectedTemplate.textColor} opacity-80`}>
+                      <div className={`text-xs md:text-sm ${selectedTemplate.textColor} opacity-80 transition-colors duration-300`}>
                         {testimonial.position}
                         {testimonial.position && testimonial.company && " at "}
                         {testimonial.company}
