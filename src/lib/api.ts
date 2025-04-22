@@ -80,7 +80,8 @@ export const submitTestimonial = async (formData: FormData): Promise<void> => {
       media_type: formData.mediaType,
       media_url: mediaUrl,
       approved: false,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      user_id: (await supabase.auth.getUser()).data.user?.id || 'anonymous'
     };
 
     const { error } = await supabase
