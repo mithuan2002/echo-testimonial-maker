@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import Auth from "@/components/Auth";
 import TestimonialCard from "@/components/TestimonialCard";
 import { getTestimonials } from "@/lib/api";
-import { useEffect, useState } from "react";
 import { Testimonial } from "@/types";
 import { Mic, Video, MessageSquare, Link2 } from "lucide-react";
 
