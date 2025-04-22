@@ -2,6 +2,21 @@
 import { Testimonial, FormData } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
+// Map Supabase response to our Testimonial type
+const mapToTestimonial = (data: any): Testimonial => ({
+  id: data.id,
+  name: data.name,
+  email: data.email,
+  company: data.company,
+  position: data.position,
+  text: data.text,
+  rating: data.rating,
+  mediaType: data.media_type,
+  mediaUrl: data.media_url,
+  approved: data.approved,
+  createdAt: new Date(data.created_at)
+});
+
 // Get all testimonials (with optional filtering)
 export const getTestimonials = async (approvedOnly = false): Promise<Testimonial[]> => {
   let query = supabase.from('testimonials').select('*');
@@ -17,7 +32,7 @@ export const getTestimonials = async (approvedOnly = false): Promise<Testimonial
     throw error;
   }
   
-  return data || [];
+  return data ? data.map(mapToTestimonial) : [];
 };
 
 // Get single testimonial by ID
@@ -33,7 +48,7 @@ export const getTestimonialById = async (id: string): Promise<Testimonial | null
     throw error;
   }
   
-  return data;
+  return data ? mapToTestimonial(data) : null;
 };
 
 // Submit a new testimonial
@@ -65,7 +80,7 @@ export const submitTestimonial = async (formData: FormData): Promise<Testimonial
     throw error;
   }
   
-  return data;
+  return mapToTestimonial(data);
 };
 
 // Update testimonial approval status
@@ -82,7 +97,7 @@ export const updateTestimonialStatus = async (id: string, approved: boolean): Pr
     throw error;
   }
   
-  return data;
+  return data ? mapToTestimonial(data) : null;
 };
 
 // Delete a testimonial
